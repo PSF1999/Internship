@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Football Standings</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <meta charset="utf-8">
+</head>
+<style>
+    .overlay {
+        display: none;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 999;
+        background: rgba(255, 255, 255, 0.8) url("https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif") center no-repeat;
+    }
+
+    body.loading {
+        overflow: hidden;
+    }
+
+    /* Make spinner image visible when body element has the loading class */
+    body.loading .overlay {
+        display: block;
+    }
+
+    .center {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 25%;
+    }
+
+    td,
+    th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #dddddd;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+
+        $(document).on({
+            ajaxStart: function () {
+                $("body").addClass("loading");
+            },
+            ajaxStop: function () {
+                $("body").removeClass("loading");
+            }
+        });
+
+        populate_countries();
+        $("#country_dropdown").on('change', function () {
+            var selected_country = $(this).val();
+            populate_leagues(selected_country)
+        });
+        $("#league_dropdown").on('change', function () {
+            var selected_league = $(this).val();
+            populate_teams(selected_league)
+        });
+        $("#team_dropdown").on('change', function () {
+            var selected_team = $(this).val();
+            var selected_league = $("#league_dropdown").val()
+            populate_standings(selected_league, selected_team)
+        });
+
+    });
+
+    function populate_countries() {
+        $.ajax({
+            url: 'http://localhost:8080/country/countries',
+            type: "GET",
+            success: function (data) {
+                $("#country_dropdown").empty();
+                $("#league_dropdown").empty();
+                $("#team_dropdown").empty();
+                $("#standing_text").val('');
+
+                $("#country_dropdown").append("<option value=-->--select country--</option>");
+                for (var i = 0; i < data.length; i++) {
+                    var id = data[i]['country_id'];
+                    var name = data[i]['country_name'];
+                    $("#country_dropdown").append("<option value='" + id + "'>" + name + "</option>");
+                }
+            },
+            error: function (error) {
+                console.log(`Error ${error}`);
+            }
+        });
+    }
+
+    function populate_leagues(country_id) {
+        $.ajax({
+            url: 'http://localhost:8080/leagues/' + country_id,
+            type: "GET",
+            success: function (data) {
+                $("#league_dropdown").empty();
+                $("#team_dropdown").empty();
+                $("#standing_text").val('');
+                $("#league_dropdown").append("<option value=-->--select league--</option>");
+                for (var i = 0; i < data.length; i++) {
+                    var id = data[i]['league_id'];
+                    var name = data[i]['league_name'];
+                    $("#league_dropdown").append("<option value='" + id + "'>" + name + "</option>");
+                }
+            },
+            error: function (error) {
+                console.log(`Error ${error}`);
+            }
+        });
+    }
+    function populate_teams(league_id) {
+        $.ajax({
+            url: 'http://localhost:8080/teams/' + league_id,
+            type: "GET",
+            success: function (data) {
+                $("#team_dropdown").empty();
+                $("#standing_text").val('');
+                $("#team_dropdown").append("<option value=-->--select team--</option>");
+                for (var i = 0; i < data.length; i++) {
+                    var id = data[i]['team_key'];
+                    var name = data[i]['team_name'];
+                    $("#team_dropdown").append("<option value='" + id + "'>" + name + "</option>");
+                }
+            },
+            error: function (error) {
+                console.log(`Error ${error}`);
+            }
+        });
+    }
+    function populate_standings(league_id, team_id) {
+        $.ajax({
+            url: 'http://localhost:8080/standings/' + league_id + '/' + team_id,
+            type: "GET",
+            success: function (data) {
+            for(var i = 0; i < data.length; i++){
+            if(data[i]['team_id'] == team_id){
+                var id = data[i]['overall_league_position'];
+                var name = data[i]['overall_league_position'];
+                $("#standing_text").val(name);
+                }
+            }
+            },
+            error: function (error) {
+                console.log(`Error ${error}`);
+            }
+        });
+    }
+
+</script>
+
+
+<body>
+
+    <div id='loader' style='display: none;'>
+
+    </div>
+
+    <table class="center">
+        <tr>
+            <td>Country</td>
+            <td><select id="country_dropdown"></select></td>
+        </tr>
+        <tr>
+            <td>League</td>
+            <td><select id="league_dropdown"></select></td>
+        </tr>
+        <tr>
+            <td>Team</td>
+            <td><select id="team_dropdown"></select></td>
+        </tr>
+        <tr>
+            <td>Overall League Position</td>
+            <td><input type="text" id="standing_text"></input></td>
+        </tr>
+    </table>
+    <div class="overlay"></div>
+
+</body>
+
+</html>

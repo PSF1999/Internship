@@ -1,0 +1,11 @@
+internship/internship/Controller/HomeController.class
+internship/internship/models/League.class
+internship/internship/models/Country.class
+internship/internship/Controller/CountryController.class
+internship/internship/Controller/TeamController.class
+internship/internship/Controller/LeagueController.class
+internship/internship/models/Team.class
+internship/internship/Controller/StandingsController.class
+internship/internship/models/Standing.class
+internship/internship/WebConfig.class
+internship/internship/FootballApplication.class
